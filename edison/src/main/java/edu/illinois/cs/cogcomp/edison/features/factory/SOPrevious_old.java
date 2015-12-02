@@ -24,13 +24,13 @@ import java.io.IOException;
  * @author Paul Vijayakumar, Mazin Bokhari
  *
  */
-public class SOPrevious implements FeatureExtractor {
+public class SOPrevious_old implements FeatureExtractor {
 
     public static View SHALLOW_PARSE, POS, TOKENS;
 
     private final String viewName;
     
-    public SOPrevious(String viewName) {
+    public SOPrevious_old(String viewName) {
 	this.viewName = viewName;
     }
 
@@ -70,6 +70,34 @@ public class SOPrevious implements FeatureExtractor {
 	}   
     }
     
+    public void initViews(Constituent c){
+	
+	TextAnnotation ta = c.getTextAnnotation();
+	
+	try{
+	    this.TOKENS = ta.getView(ViewNames.TOKENS);
+	    this.POS = ta.getView(ViewNames.POS);
+	    this.SHALLOW_PARSE = ta.getView(ViewNames.SHALLOW_PARSE);
+	}
+	catch(Exception e){
+	    e.printStackTrace();
+	}
+	
+    }
+    
+    public List<Constituent> getstuff(Constituent c){
+	
+	//We can assume that the constituent in this case is a Word(Token) described by the LBJ chunk definition
+	int startspan = c.getStartSpan();
+	int endspan = c.getEndSpan();
+	
+	//All our constituents are words(tokens)
+	int k = -2; //words two before
+	
+	return getwordskfrom(TOKENS,startspan,endspan,k);
+    }
+    
+    
     @Override
     /**
      * This feature extractor assumes that the TOKEN View, POS View and the SHALLOW_PARSE View have been
@@ -79,24 +107,12 @@ public class SOPrevious implements FeatureExtractor {
      **/
     public Set<Feature> getFeatures(Constituent c) throws EdisonException {
 	
-	TextAnnotation ta = c.getTextAnnotation();
-
-	try{
-	TOKENS = ta.getView(ViewNames.TOKENS);
-	POS = ta.getView(ViewNames.POS);
-	SHALLOW_PARSE = ta.getView(ViewNames.SHALLOW_PARSE);
-	}
-	catch(Exception e){
-	    e.printStackTrace();
-	}
+	initViews(c);
 	
-	//We can assume that the constituent in this case is a Word(Token) described by the LBJ chunk definition
+	List<Constituent> wordstwobefore = getstuff(c);
+	
 	int startspan = c.getStartSpan();
 	int endspan = c.getEndSpan();
-	
-	//All our constituents are words(tokens)
-	int k = -2; //words two before
-	List<Constituent> wordstwobefore = getwordskfrom(TOKENS,startspan,endspan,k);
 	
 	if(wordstwobefore.size() != 2)
 	    return null;
@@ -148,7 +164,7 @@ public class SOPrevious implements FeatureExtractor {
 	__result.add(new DiscreteFeature(__id+__value));
 	
 	__id = classifier+":"+"lt2";
-	__value = "" + (labels[1] + "_" + tags[2]);
+	__value = "(" + (labels[1] + "_" + tags[2]) +")";
 	System.out.println(__id+__value);
 	__result.add(new DiscreteFeature(__id+__value));
 	
