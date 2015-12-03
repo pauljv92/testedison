@@ -105,8 +105,8 @@ public class PreviousTags implements FeatureExtractor {
 	    }
 	    
 	    labels[i] = Chunk_label.get(0);
+	    String __value = "(" + labels[i] + ")";	    
 	    String __id = classifier +":"+ (i++);
-	    String __value = "(" + labels[i] + ")";
 	    __result.add(new DiscreteFeature(__id+__value));
 	}
 	
